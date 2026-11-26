@@ -61,6 +61,26 @@ class ProductoServiceTest {
     }
 
     @Test
+    void liberarDevuelveLasUnidadesReservadasADisponible() {
+        when(productoRepository.findBySku("SKU-1")).thenReturn(Optional.of(producto("SKU-1", 7, 3)));
+        when(productoRepository.save(any(Producto.class))).thenAnswer(invocacion -> invocacion.getArgument(0));
+
+        ReservaResponse respuesta = productoService.liberar("SKU-1", 3);
+
+        assertThat(respuesta.stockDisponible()).isEqualTo(10);
+        assertThat(respuesta.stockReservado()).isZero();
+    }
+
+    @Test
+    void liberarMasDeLoReservadoLanzaReglaNegocioYNoGuarda() {
+        when(productoRepository.findBySku("SKU-1")).thenReturn(Optional.of(producto("SKU-1", 7, 1)));
+
+        assertThatThrownBy(() -> productoService.liberar("SKU-1", 2))
+                .isInstanceOf(ReglaNegocioException.class);
+        verify(productoRepository, never()).save(any());
+    }
+
+    @Test
     void descontarMasDeLoReservadoLanzaReglaNegocio() {
         when(productoRepository.findBySku("SKU-1")).thenReturn(Optional.of(producto("SKU-1", 5, 1)));
 

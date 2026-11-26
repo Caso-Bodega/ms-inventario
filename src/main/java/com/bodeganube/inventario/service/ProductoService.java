@@ -51,7 +51,7 @@ public class ProductoService {
 
     @Transactional
     public ProductoResponse actualizar(String sku, ActualizarProductoRequest request) {
-        Producto producto = buscarPorSku(sku);
+        Producto producto = buscarParaActualizar(sku);
         producto.setNombre(request.nombre());
         producto.setStockDisponible(request.stockDisponible());
         return ProductoResponse.de(productoRepository.save(producto));
@@ -74,7 +74,7 @@ public class ProductoService {
      */
     @Transactional
     public ReservaResponse reservar(String sku, int cantidad) {
-        Producto producto = buscarPorSku(sku);
+        Producto producto = buscarParaActualizar(sku);
         if (producto.getStockDisponible() < cantidad) {
             throw new ReglaNegocioException("Stock insuficiente para " + sku + ": disponible "
                     + producto.getStockDisponible() + ", solicitado " + cantidad);
@@ -87,7 +87,7 @@ public class ProductoService {
     /** Descuenta definitivamente unidades ya reservadas, cuando se confirma el despacho. */
     @Transactional
     public ReservaResponse descontar(String sku, int cantidad) {
-        Producto producto = buscarPorSku(sku);
+        Producto producto = buscarParaActualizar(sku);
         if (producto.getStockReservado() < cantidad) {
             throw new ReglaNegocioException("No se pueden descontar " + cantidad + " unidades de " + sku
                     + ": solo hay " + producto.getStockReservado() + " reservadas");
@@ -102,7 +102,7 @@ public class ProductoService {
      */
     @Transactional
     public ReservaResponse liberar(String sku, int cantidad) {
-        Producto producto = buscarPorSku(sku);
+        Producto producto = buscarParaActualizar(sku);
         if (producto.getStockReservado() < cantidad) {
             throw new ReglaNegocioException("No se pueden liberar " + cantidad + " unidades de " + sku
                     + ": solo hay " + producto.getStockReservado() + " reservadas");
@@ -110,6 +110,12 @@ public class ProductoService {
         producto.setStockReservado(producto.getStockReservado() - cantidad);
         producto.setStockDisponible(producto.getStockDisponible() + cantidad);
         return ReservaResponse.de(productoRepository.save(producto), cantidad, "Reserva liberada");
+    }
+
+    /** Igual que buscarPorSku, pero bloquea la fila del producto mientras dura la transaccion. */
+    private Producto buscarParaActualizar(String sku) {
+        return productoRepository.findBySkuParaActualizar(sku)
+                .orElseThrow(() -> new RecursoNoEncontradoException("No existe un producto con SKU " + sku));
     }
 
     private Producto buscarPorSku(String sku) {

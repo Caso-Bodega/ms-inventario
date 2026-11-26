@@ -33,7 +33,7 @@ class ProductoServiceTest {
 
     @Test
     void reservarMueveUnidadesDeDisponibleAReservado() {
-        when(productoRepository.findBySku("SKU-1")).thenReturn(Optional.of(producto("SKU-1", 10, 0)));
+        when(productoRepository.findBySkuParaActualizar("SKU-1")).thenReturn(Optional.of(producto("SKU-1", 10, 0)));
         when(productoRepository.save(any(Producto.class))).thenAnswer(invocacion -> invocacion.getArgument(0));
 
         ReservaResponse respuesta = productoService.reservar("SKU-1", 3);
@@ -44,7 +44,7 @@ class ProductoServiceTest {
 
     @Test
     void reservarSinStockSuficienteLanzaReglaNegocioYNoGuarda() {
-        when(productoRepository.findBySku("SKU-1")).thenReturn(Optional.of(producto("SKU-1", 2, 0)));
+        when(productoRepository.findBySkuParaActualizar("SKU-1")).thenReturn(Optional.of(producto("SKU-1", 2, 0)));
 
         assertThatThrownBy(() -> productoService.reservar("SKU-1", 5))
                 .isInstanceOf(ReglaNegocioException.class)
@@ -54,7 +54,7 @@ class ProductoServiceTest {
 
     @Test
     void reservarProductoInexistenteLanzaRecursoNoEncontrado() {
-        when(productoRepository.findBySku("NO-EXISTE")).thenReturn(Optional.empty());
+        when(productoRepository.findBySkuParaActualizar("NO-EXISTE")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> productoService.reservar("NO-EXISTE", 1))
                 .isInstanceOf(RecursoNoEncontradoException.class);
@@ -62,7 +62,7 @@ class ProductoServiceTest {
 
     @Test
     void liberarDevuelveLasUnidadesReservadasADisponible() {
-        when(productoRepository.findBySku("SKU-1")).thenReturn(Optional.of(producto("SKU-1", 7, 3)));
+        when(productoRepository.findBySkuParaActualizar("SKU-1")).thenReturn(Optional.of(producto("SKU-1", 7, 3)));
         when(productoRepository.save(any(Producto.class))).thenAnswer(invocacion -> invocacion.getArgument(0));
 
         ReservaResponse respuesta = productoService.liberar("SKU-1", 3);
@@ -73,7 +73,7 @@ class ProductoServiceTest {
 
     @Test
     void liberarMasDeLoReservadoLanzaReglaNegocioYNoGuarda() {
-        when(productoRepository.findBySku("SKU-1")).thenReturn(Optional.of(producto("SKU-1", 7, 1)));
+        when(productoRepository.findBySkuParaActualizar("SKU-1")).thenReturn(Optional.of(producto("SKU-1", 7, 1)));
 
         assertThatThrownBy(() -> productoService.liberar("SKU-1", 2))
                 .isInstanceOf(ReglaNegocioException.class);
@@ -82,7 +82,7 @@ class ProductoServiceTest {
 
     @Test
     void descontarMasDeLoReservadoLanzaReglaNegocio() {
-        when(productoRepository.findBySku("SKU-1")).thenReturn(Optional.of(producto("SKU-1", 5, 1)));
+        when(productoRepository.findBySkuParaActualizar("SKU-1")).thenReturn(Optional.of(producto("SKU-1", 5, 1)));
 
         assertThatThrownBy(() -> productoService.descontar("SKU-1", 2))
                 .isInstanceOf(ReglaNegocioException.class);

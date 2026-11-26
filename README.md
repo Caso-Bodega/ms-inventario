@@ -41,13 +41,13 @@ Base: `http://localhost:8083` (o `http://localhost:8080` a través de ms-gateway
 
 | Método | Ruta | Qué hace | Respuestas |
 |---|---|---|---|
-| GET | `/api/productos` | Lista el catálogo | 200 |
-| GET | `/api/productos/{sku}` | Obtiene un producto | 200, 404 |
-| POST | `/api/productos` | Crea un producto | 201 con `Location`, 400, 409 si el SKU ya existe |
-| PUT | `/api/productos/{sku}` | Cambia el nombre y el stock disponible | 200, 400, 404 |
-| DELETE | `/api/productos/{sku}` | Elimina un producto | 204, 404, 409 si tiene unidades reservadas |
-| POST | `/api/productos/{sku}/reservar` | Reserva `{"cantidad": n}` | 200, 400, 404, 409 si no hay stock |
-| POST | `/api/productos/{sku}/descontar` | Descuenta unidades reservadas al despachar | 200, 400, 404, 409 |
+| GET | `/api/v1/productos` | Lista el catálogo | 200 |
+| GET | `/api/v1/productos/{sku}` | Obtiene un producto | 200, 404 |
+| POST | `/api/v1/productos` | Crea un producto | 201 con `Location`, 400, 409 si el SKU ya existe |
+| PUT | `/api/v1/productos/{sku}` | Cambia el nombre y el stock disponible | 200, 400, 404 |
+| DELETE | `/api/v1/productos/{sku}` | Elimina un producto | 204, 404, 409 si tiene unidades reservadas |
+| POST | `/api/v1/productos/{sku}/reservar` | Reserva `{"cantidad": n}` | 200, 400, 404, 409 si no hay stock |
+| POST | `/api/v1/productos/{sku}/descontar` | Descuenta unidades reservadas al despachar | 200, 400, 404, 409 |
 
 Todas las respuestas de error tienen el mismo formato:
 ```json
@@ -56,7 +56,7 @@ Todas las respuestas de error tienen el mismo formato:
   "status": 409,
   "error": "Conflict",
   "mensaje": "Stock insuficiente para POLERA-M: disponible 20, solicitado 500",
-  "ruta": "/api/productos/POLERA-M/reservar"
+  "ruta": "/api/v1/productos/POLERA-M/reservar"
 }
 ```
 En los errores de validación (400) se agrega `detalles`, con el mensaje de cada campo inválido.

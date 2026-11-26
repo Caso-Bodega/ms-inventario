@@ -27,7 +27,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
  * RF-04: reserva/descuento de stock (invocado por ms-ordenes, protegido alla con Circuit Breaker).
  */
 @RestController
-@RequestMapping("/api/productos")
+@RequestMapping("/api/v1/productos")
 public class ProductoController {
 
     private final ProductoService productoService;
@@ -71,6 +71,12 @@ public class ProductoController {
     @PostMapping("/{sku}/reservar")
     public ReservaResponse reservarStock(@PathVariable String sku, @Valid @RequestBody ReservaRequest request) {
         return productoService.reservar(sku, request.cantidad());
+    }
+
+    /** Deshace una reserva (compensacion): las unidades vuelven a quedar disponibles. */
+    @PostMapping("/{sku}/liberar")
+    public ReservaResponse liberarReserva(@PathVariable String sku, @Valid @RequestBody ReservaRequest request) {
+        return productoService.liberar(sku, request.cantidad());
     }
 
     @PostMapping("/{sku}/descontar")

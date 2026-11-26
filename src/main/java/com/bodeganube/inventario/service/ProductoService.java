@@ -96,6 +96,22 @@ public class ProductoService {
         return ReservaResponse.de(productoRepository.save(producto), cantidad, "Reserva descontada del inventario");
     }
 
+    /**
+     * Compensacion de una reserva: devuelve a "disponible" unidades que estaban reservadas. La usa ms-ordenes
+     * cuando un item de la orden no tiene stock y hay que deshacer lo que ya se habia reservado de los otros.
+     */
+    @Transactional
+    public ReservaResponse liberar(String sku, int cantidad) {
+        Producto producto = buscarPorSku(sku);
+        if (producto.getStockReservado() < cantidad) {
+            throw new ReglaNegocioException("No se pueden liberar " + cantidad + " unidades de " + sku
+                    + ": solo hay " + producto.getStockReservado() + " reservadas");
+        }
+        producto.setStockReservado(producto.getStockReservado() - cantidad);
+        producto.setStockDisponible(producto.getStockDisponible() + cantidad);
+        return ReservaResponse.de(productoRepository.save(producto), cantidad, "Reserva liberada");
+    }
+
     private Producto buscarPorSku(String sku) {
         return productoRepository.findBySku(sku)
                 .orElseThrow(() -> new RecursoNoEncontradoException("No existe un producto con SKU " + sku));

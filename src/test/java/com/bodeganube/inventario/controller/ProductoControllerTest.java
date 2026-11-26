@@ -40,7 +40,7 @@ class ProductoControllerTest {
     void obtenerProductoExistenteDevuelve200() throws Exception {
         when(productoService.obtener("SKU-1")).thenReturn(new ProductoResponse(1L, "SKU-1", "Polera talla M", 10, 0));
 
-        mockMvc.perform(get("/api/productos/SKU-1"))
+        mockMvc.perform(get("/api/v1/productos/SKU-1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.sku").value("SKU-1"))
                 .andExpect(jsonPath("$.stockDisponible").value(10));
@@ -51,7 +51,7 @@ class ProductoControllerTest {
         when(productoService.obtener("NO-EXISTE"))
                 .thenThrow(new RecursoNoEncontradoException("No existe un producto con SKU NO-EXISTE"));
 
-        mockMvc.perform(get("/api/productos/NO-EXISTE"))
+        mockMvc.perform(get("/api/v1/productos/NO-EXISTE"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.mensaje").value("No existe un producto con SKU NO-EXISTE"));
@@ -62,17 +62,17 @@ class ProductoControllerTest {
         when(productoService.crear(any(ProductoRequest.class)))
                 .thenReturn(new ProductoResponse(1L, "SKU-1", "Polera talla M", 10, 0));
 
-        mockMvc.perform(post("/api/productos")
+        mockMvc.perform(post("/api/v1/productos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"sku\":\"SKU-1\",\"nombre\":\"Polera talla M\",\"stockDisponible\":10}"))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", endsWith("/api/productos/SKU-1")))
+                .andExpect(header().string("Location", endsWith("/api/v1/productos/SKU-1")))
                 .andExpect(jsonPath("$.id").value(1));
     }
 
     @Test
     void crearProductoInvalidoDevuelve400ConDetallePorCampo() throws Exception {
-        mockMvc.perform(post("/api/productos")
+        mockMvc.perform(post("/api/v1/productos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"sku\":\"SKU-1\",\"stockDisponible\":-1}"))
                 .andExpect(status().isBadRequest())
@@ -84,7 +84,7 @@ class ProductoControllerTest {
     void reservarSinStockDevuelve409() throws Exception {
         when(productoService.reservar("SKU-1", 50)).thenThrow(new ReglaNegocioException("Stock insuficiente"));
 
-        mockMvc.perform(post("/api/productos/SKU-1/reservar")
+        mockMvc.perform(post("/api/v1/productos/SKU-1/reservar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"cantidad\":50}"))
                 .andExpect(status().isConflict())
@@ -92,8 +92,18 @@ class ProductoControllerTest {
     }
 
     @Test
+    void liberarMasDeLoReservadoDevuelve409() throws Exception {
+        when(productoService.liberar("SKU-1", 5)).thenThrow(new ReglaNegocioException("Solo hay 1 reservadas"));
+
+        mockMvc.perform(post("/api/v1/productos/SKU-1/liberar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"cantidad\":5}"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
     void eliminarDevuelve204() throws Exception {
-        mockMvc.perform(delete("/api/productos/SKU-1"))
+        mockMvc.perform(delete("/api/v1/productos/SKU-1"))
                 .andExpect(status().isNoContent());
 
         verify(productoService).eliminar("SKU-1");

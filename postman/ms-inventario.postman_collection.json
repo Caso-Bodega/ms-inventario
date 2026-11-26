@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "7fd00d6a-7609-d08c-422c-a01b3e03c90d",
     "name": "BodegaNube - ms-inventario",
-    "description": "Catalogo y stock. Ejecutar en orden (Run collection): crea un producto, prueba errores, reserva, descuenta y lo elimina. Se puede repetir: el SKU cambia en cada ejecucion.",
+    "description": "Catalogo y stock. Ejecutar en orden (Run collection): crea un producto, prueba errores, reserva, libera parte de la reserva (compensacion que usa ms-ordenes), descuenta y lo elimina. Se puede repetir: el SKU cambia en cada ejecucion.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -38,7 +38,7 @@
             "value": "application/json"
           }
         ],
-        "url": "{{baseUrl}}/api/productos",
+        "url": "{{baseUrl}}/api/v1/productos",
         "body": {
           "mode": "raw",
           "raw": "{\n  \"sku\": \"{{sku}}\",\n  \"nombre\": \"Polera talla M\",\n  \"stockDisponible\": 20\n}",
@@ -71,7 +71,7 @@
             "value": "application/json"
           }
         ],
-        "url": "{{baseUrl}}/api/productos",
+        "url": "{{baseUrl}}/api/v1/productos",
         "body": {
           "mode": "raw",
           "raw": "{\n  \"sku\": \"{{sku}}\",\n  \"nombre\": \"Polera talla M\",\n  \"stockDisponible\": 20\n}",
@@ -105,7 +105,7 @@
             "value": "application/json"
           }
         ],
-        "url": "{{baseUrl}}/api/productos",
+        "url": "{{baseUrl}}/api/v1/productos",
         "body": {
           "mode": "raw",
           "raw": "{\n  \"sku\": \"\",\n  \"stockDisponible\": -5\n}",
@@ -134,7 +134,7 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{baseUrl}}/api/productos"
+        "url": "{{baseUrl}}/api/v1/productos"
       }
     },
     {
@@ -153,7 +153,7 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{baseUrl}}/api/productos/{{sku}}"
+        "url": "{{baseUrl}}/api/v1/productos/{{sku}}"
       }
     },
     {
@@ -172,7 +172,7 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{baseUrl}}/api/productos/NO-EXISTE"
+        "url": "{{baseUrl}}/api/v1/productos/NO-EXISTE"
       }
     },
     {
@@ -197,7 +197,7 @@
             "value": "application/json"
           }
         ],
-        "url": "{{baseUrl}}/api/productos/{{sku}}",
+        "url": "{{baseUrl}}/api/v1/productos/{{sku}}",
         "body": {
           "mode": "raw",
           "raw": "{\n  \"nombre\": \"Polera talla M azul\",\n  \"stockDisponible\": 25\n}",
@@ -232,7 +232,7 @@
             "value": "application/json"
           }
         ],
-        "url": "{{baseUrl}}/api/productos/{{sku}}/reservar",
+        "url": "{{baseUrl}}/api/v1/productos/{{sku}}/reservar",
         "body": {
           "mode": "raw",
           "raw": "{\n  \"cantidad\": 5\n}",
@@ -265,10 +265,78 @@
             "value": "application/json"
           }
         ],
-        "url": "{{baseUrl}}/api/productos/{{sku}}/reservar",
+        "url": "{{baseUrl}}/api/v1/productos/{{sku}}/reservar",
         "body": {
           "mode": "raw",
           "raw": "{\n  \"cantidad\": 500\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Liberar parte de la reserva (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"pm.response.json().stockDisponible === 22\", () => pm.expect(pm.response.json().stockDisponible === 22).to.be.true);",
+              "pm.test(\"pm.response.json().stockReservado === 3\", () => pm.expect(pm.response.json().stockReservado === 3).to.be.true);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos/{{sku}}/liberar",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cantidad\": 2\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Liberar mas de lo reservado (409)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 409\", () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos/{{sku}}/liberar",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cantidad\": 50\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -293,7 +361,7 @@
       "request": {
         "method": "DELETE",
         "header": [],
-        "url": "{{baseUrl}}/api/productos/{{sku}}"
+        "url": "{{baseUrl}}/api/v1/productos/{{sku}}"
       }
     },
     {
@@ -318,10 +386,10 @@
             "value": "application/json"
           }
         ],
-        "url": "{{baseUrl}}/api/productos/{{sku}}/descontar",
+        "url": "{{baseUrl}}/api/v1/productos/{{sku}}/descontar",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"cantidad\": 5\n}",
+          "raw": "{\n  \"cantidad\": 3\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -346,7 +414,7 @@
       "request": {
         "method": "DELETE",
         "header": [],
-        "url": "{{baseUrl}}/api/productos/{{sku}}"
+        "url": "{{baseUrl}}/api/v1/productos/{{sku}}"
       }
     },
     {
@@ -365,7 +433,7 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{baseUrl}}/api/productos/{{sku}}"
+        "url": "{{baseUrl}}/api/v1/productos/{{sku}}"
       }
     }
   ],

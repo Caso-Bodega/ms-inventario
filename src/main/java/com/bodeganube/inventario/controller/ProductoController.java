@@ -73,6 +73,12 @@ public class ProductoController {
         return productoService.reservar(sku, request.cantidad());
     }
 
+    /** Deshace una reserva (compensacion): las unidades vuelven a quedar disponibles. */
+    @PostMapping("/{sku}/liberar")
+    public ReservaResponse liberarReserva(@PathVariable String sku, @Valid @RequestBody ReservaRequest request) {
+        return productoService.liberar(sku, request.cantidad());
+    }
+
     @PostMapping("/{sku}/descontar")
     public ReservaResponse descontarReserva(@PathVariable String sku, @Valid @RequestBody ReservaRequest request) {
         return productoService.descontar(sku, request.cantidad());

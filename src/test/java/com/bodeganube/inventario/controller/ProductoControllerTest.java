@@ -92,6 +92,16 @@ class ProductoControllerTest {
     }
 
     @Test
+    void liberarMasDeLoReservadoDevuelve409() throws Exception {
+        when(productoService.liberar("SKU-1", 5)).thenThrow(new ReglaNegocioException("Solo hay 1 reservadas"));
+
+        mockMvc.perform(post("/api/v1/productos/SKU-1/liberar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"cantidad\":5}"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
     void eliminarDevuelve204() throws Exception {
         mockMvc.perform(delete("/api/v1/productos/SKU-1"))
                 .andExpect(status().isNoContent());

@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "7fd00d6a-7609-d08c-422c-a01b3e03c90d",
     "name": "BodegaNube - ms-inventario",
-    "description": "Catalogo y stock. Ejecutar en orden (Run collection): crea un producto, prueba errores, reserva, descuenta y lo elimina. Se puede repetir: el SKU cambia en cada ejecucion.",
+    "description": "Catalogo y stock. Ejecutar en orden (Run collection): crea un producto, prueba errores, reserva, libera parte de la reserva (compensacion que usa ms-ordenes), descuenta y lo elimina. Se puede repetir: el SKU cambia en cada ejecucion.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -278,6 +278,74 @@
       }
     },
     {
+      "name": "Liberar parte de la reserva (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"pm.response.json().stockDisponible === 22\", () => pm.expect(pm.response.json().stockDisponible === 22).to.be.true);",
+              "pm.test(\"pm.response.json().stockReservado === 3\", () => pm.expect(pm.response.json().stockReservado === 3).to.be.true);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos/{{sku}}/liberar",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cantidad\": 2\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Liberar mas de lo reservado (409)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 409\", () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos/{{sku}}/liberar",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cantidad\": 50\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
       "name": "Eliminar producto con reservas (409)",
       "event": [
         {
@@ -321,7 +389,7 @@
         "url": "{{baseUrl}}/api/v1/productos/{{sku}}/descontar",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"cantidad\": 5\n}",
+          "raw": "{\n  \"cantidad\": 3\n}",
           "options": {
             "raw": {
               "language": "json"
